@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Conectados — Expansão</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon-192.png" />
+  <style>
+    :root{
+      --bg: #f1f5f9; /* slate-100 */
+      --card: #ffffff;
+      --ink: #0f172a; /* slate-900 */
+      --muted: #475569; /* slate-600 */
+      --ring: #e2e8f0; /* slate-200 */
+      --accent: #1d4ed8; /* blue-700 */
+      --accent-2: #334155; /* slate-700 */
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: linear-gradient(145deg,#f8fafc,#eef2f7);
+      color: var(--ink); font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    .header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+    .title { font-size: 24px; font-weight: 800; letter-spacing: .2px; }
+    .badges { display:flex; gap:8px; flex-wrap:wrap; }
+    .badge { background:#e2e8f0; color:#0f172a; padding:4px 8px; border-radius:999px; font-size:12px; }
+    .grid { display:grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 992px) { .grid { grid-template-columns: 2fr 1fr; } }
+    .card { background: var(--card); border:1px solid var(--ring); border-radius: 16px; box-shadow: 0 6px 20px rgba(2,8,23,.05); }
+    .card .body { padding: 16px; }
+    .card .head { padding: 16px; border-bottom: 1px solid var(--ring); font-weight: 700; }
+    .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between; }
+    .chip { border:1px solid var(--ring); padding:8px 12px; border-radius:999px; font-size:12px; background:#fff; }
+    .btn { appearance: none; border:0; border-radius: 10px; padding:10px 14px; font-weight:600; cursor:pointer; background: var(--accent); color:#fff; }
+    .btn.secondary { background:#fff; border:1px solid var(--ring); color: var(--ink); }
+    .btn.ghost { background:transparent; border:1px solid var(--ring); color: var(--ink); }
+    .btn:disabled { opacity:.6; cursor:not-allowed; }
+    .grid-opts { display:grid; grid-template-columns:1fr; gap:8px; }
+    @media (min-width:720px){ .grid-opts { grid-template-columns:1fr 1fr; } }
+    .opt { border:1px solid var(--ring); background:#fff; padding:10px 12px; border-radius:12px; }
+    .question-box { min-height:140px; border-radius:16px; border:1px solid var(--ring); background:#fff; padding: 14px; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .cat-wrap { display:grid; gap:10px; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    @media (min-width: 900px) { .cat-wrap { grid-template-columns: repeat(6, minmax(0,1fr)); } }
+    label.cat { display:flex; align-items:center; gap:8px; border:1px solid var(--ring); padding:8px 10px; border-radius: 12px; background:#fff; }
+    .switch { display:flex; align-items:center; gap:8px; }
+    .progress { width:100%; height:10px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
+    .progress > div { height:100%; width:0%; background: linear-gradient(90deg,#1d4ed8,#0ea5e9); }
+    .footer { display:flex; align-items:center; justify-content:space-between; gap: 8px; padding: 12px 16px; border:1px solid var(--ring); background:#fff; border-radius: 16px; }
+    .time { font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <div>
+        <div class="title">Conectados — Expansão</div>
+        <div class="muted">200 perguntas aleatórias com filtro por categoria e timer de 1,5 min.</div>
+      </div>
+      <div class="badges">
+        <div class="badge" id="badge-count">Perguntas: 200</div>
+        <div class="badge">Timer: 90s</div>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="head">Categorias</div>
+      <div class="body">
+        <div class="row" style="margin-bottom:8px;">
+          <div class="switch">
+            <input type="checkbox" id="toggle-all" checked>
+            <label for="toggle-all">Selecionar todas</label>
+          </div>
+          <div class="muted" id="cats-available">—</div>
+        </div>
+        <div class="cat-wrap" id="cats"></div>
+      </div>
+    </section>
+
+    <section class="grid" style="margin-top:16px;">
+      <section class="card">
+        <div class="head">Pergunta</div>
+        <div class="body">
+          <div class="row" style="margin-bottom:12px;">
+            <div class="chip" id="chip-cat">—</div>
+            <div class="row" style="gap:8px;">
+              <button class="btn" id="btn-sortear">Sortear pergunta</button>
+              <button class="btn secondary" id="btn-regenerar" title="Regenerar banco aleatório">Regenerar 200</button>
+            </div>
+          </div>
+          <div class="question-box" id="box">
+            <div class="muted">Clique em “Sortear pergunta”</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="head">Timer (1,5 min)</div>
+        <div class="body">
+          <div class="row" style="margin-bottom:8px;">
+            <div class="time" id="clock">01:30</div>
+            <div class="row">
+              <button class="btn" id="btn-start">Iniciar</button>
+              <button class="btn secondary" id="btn-pause">Pausar</button>
+              <button class="btn ghost" id="btn-reset">Reiniciar</button>
+            </div>
+          </div>
+          <div class="progress"><div id="bar"></div></div>
+          <div class="muted">O timer inicia automaticamente ao sortear uma nova pergunta.</div>
+        </div>
+      </section>
+    </section>
+
+    <footer class="footer" style="margin-top:16px;">
+      <div class="muted">Dica: abra em tela cheia no tablet.</div>
+      <button class="btn" id="btn-next">Próxima aleatória</button>
+    </footer>
+  </main>
+
+  <script>
+    // --- RNG & helpers ---
+    function createRNG(seed) {
+      let s = seed >>> 0;
+      return function() {
+        s = (1664525 * s + 1013904223) >>> 0;
+        return s / 2 ** 32;
+      }
+    }
+    function pick(rand, arr) { return arr[Math.floor(rand() * arr.length)]; }
+    function shuffle(rand, arr) {
+      const a = arr.slice();
+      for (let i=a.length-1;i>0;i--){
+        const j = Math.floor(rand()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+      }
+      return a;
+    }
+    function sliceOptions(rand, opcoes) {
+      const max = Math.min(5, opcoes.length);
+      const min = Math.min(2, max);
+      const qtd = Math.floor(rand() * (max - min + 1)) + min;
+      return shuffle(rand, opcoes).slice(0, qtd);
+    }
+
+    const CATEGORIAS = [
+      "Dilemas","Cotidiano","Trabalho","Tecnologia","Viagem","Comida","Música",
+      "Cinema e TV","Esporte","Ciência","História","Brasil","Sustentabilidade",
+      "Relacionamentos","Educação","Humor"
+    ];
+
+    const VOC = {
+      cidadesBR: ["São Paulo","Rio de Janeiro","Salvador","Recife","Fortaleza","Curitiba","Brasília","Belo Horizonte","Manaus","Florianópolis"],
+      paises: ["Japão","Itália","Estados Unidos","Portugal","Canadá","México","França","Espanha","Argentina","Alemanha"],
+      comidas: ["pizza","sushi","churrasco","feijoada","tacos","lasanha","hambúrguer","salada","pastel","açaí"],
+      bebidas: ["café","chá","suco","refrigerante","água com gás"],
+      sobremesas: ["brigadeiro","pudim","bolo de cenoura","sorvete","quindim"],
+      apps: ["WhatsApp","Instagram","TikTok","YouTube","Spotify","Maps","Banco","E-mail"],
+      hobbies: ["fotografia","jardinagem","jogos","cozinha","leitura","corrida","ciclismo","desenho","música","meditação"],
+      esportes: ["futebol","basquete","vôlei","tênis","corrida","natação","skate","surf"],
+      generosFilme: ["comédia","ação","drama","suspense","ficção científica","documentário","animação","romance"],
+      generosMusica: ["pop","rock","samba","sertanejo","gospel","hip hop","MPB","eletrônica","jazz"],
+      instrumentos: ["violão","piano","bateria","baixo","teclado","saxofone"],
+      tarefasCasa: ["lavar louça","passar roupa","arrumar a cama","varrer a casa","limpar o banheiro"],
+      qualidades: ["organização","criatividade","pontualidade","comunicação","persistência","calma"],
+      climas: ["frio","calor","chuva","tempo nublado"],
+      lugares: ["praia","campo","serra","cidade histórica","parque"],
+      turnos: ["manhã","tarde","noite","madrugada"],
+      figurasHistoricas: ["Leonardo da Vinci","Cleópatra","Dom Pedro II","Albert Einstein","Zumbi dos Palmares"],
+      superpoderes: ["teletransporte","invisibilidade","voar","ler mentes","cura instantânea"],
+    };
+
+    function buildTemplates(){
+      const T = [];
+      T.push((rand)=>({categoria:"Dilemas", texto:"Você ganha um dia livre inesperado. O que faz?", opcoes:["Maratonar uma série","Fazer uma trilha","Colocar a leitura em dia","Dormir e descansar","Encontrar amigos"]}));
+      T.push((rand)=>({categoria:"Viagem", texto:"Seu voo atrasou 3 horas. O que você faz primeiro?", opcoes:["Procuro um lugar confortável","Trabalho/estudo no laptop","Exploro as lojas do aeroporto","Tiro um cochilo","Faço uma chamada de vídeo"]}));
+      T.push((rand)=>({categoria:"Tecnologia", texto:"Seu celular está com 5% de bateria e sem carregador. Qual app usar por último?", opcoes: shuffle(rand, VOC.apps).slice(0,6)}));
+      T.push((rand)=>({categoria:"Trabalho", texto:"Em uma reunião, surge um silêncio constrangedor. Você...", opcoes:["Puxa um assunto relacionado","Conta uma piada leve","Volta ao tópico com objetividade","Pergunta se há dúvidas","Faz um resumo do que foi dito"]}));
+      T.push((rand)=>({categoria:"Comida", texto:"Para um jantar rápido hoje, você escolhe:", opcoes: shuffle(rand, VOC.comidas).slice(0,6)}));
+      T.push((rand)=>({categoria:"Viagem", texto:"Se pudesse viajar amanhã, iria para...", opcoes: shuffle(rand, VOC.paises.concat(VOC.cidadesBR)).slice(0,7)}));
+      T.push((rand)=>({categoria:"Música", texto:"Em um show, você prefere ficar...", opcoes:["Na grade, perto do palco","No meio, curtindo com a galera","Mais atrás, com espaço","Na área VIP/cadeiras","Onde der para dançar"]}));
+      T.push((rand)=>({categoria:"Cinema e TV", texto:"Para maratonar no fim de semana, escolhe qual gênero?", opcoes: shuffle(rand, VOC.generosFilme).slice(0,6)}));
+      T.push((rand)=>({categoria:"Esporte", texto:"Domingo de manhã, o esporte que te anima é...", opcoes: shuffle(rand, VOC.esportes).slice(0,6)}));
+      T.push((rand)=>({categoria:"Ciência", texto:"Se pudesse ter um 'superpoder científico', qual seria?", opcoes: shuffle(rand, VOC.superpoderes).slice(0,6)}));
+      T.push((rand)=>({categoria:"História", texto:"Se pudesse jantar com uma figura histórica, quem seria?", opcoes: shuffle(rand, VOC.figurasHistoricas).slice(0,6)}));
+      T.push((rand)=>({categoria:"Brasil", texto:"Para um feriado curto no Brasil, para onde você iria?", opcoes: shuffle(rand, VOC.cidadesBR.concat(VOC.lugares)).slice(0,7)}));
+      T.push((rand)=>({categoria:"Sustentabilidade", texto:"Para reduzir lixo em casa, você começa por...", opcoes:["Usar garrafa reutilizável","Evitar descartáveis","Separar recicláveis","Compostar orgânicos","Comprar a granel"]}));
+      T.push((rand)=>({categoria:"Relacionamentos", texto:"Num amigo, você valoriza mais...", opcoes:["Lealdade","Senso de humor","Sinceridade","Companheirismo","Empatia"]}));
+      T.push((rand)=>({categoria:"Educação", texto:"Para aprender algo novo rapidamente, você prefere...", opcoes:["Vídeos curtos","Cursos online","Livros","Podcasts","Mentoria"]}));
+      T.push((rand)=>({categoria:"Humor", texto:"Quando algo dá errado, sua reação padrão é...", opcoes:["Rir de si mesmo(a)","Respirar fundo","Pedir ajuda","Resolver na hora","Deixar para depois"]}));
+      T.push((rand)=>({categoria:"Cotidiano", texto:"Você acorda e faltou luz. Sua prioridade é...", opcoes:["Fazer café assim mesmo","Verificar a geladeira","Procurar velas/lanternas","Checar vizinhos","Reportar à companhia"]}));
+      T.push((rand)=>({categoria:"Dilemas", texto:"Você encontra R$100 na rua. O que faz?", opcoes:["Procura o dono","Doa para alguém","Gasta em um mimo","Guarda para emergência","Divide com amigos"]}));
+      T.push((rand)=>({categoria:"Tecnologia", texto:"Notificações a cada 5 min te distraem. O que você faz?", opcoes:["Ativa 'Não Perturbe'","Desinstala apps por um tempo","Silencia grupos","Define horários sem tela","Nada, lido bem com isso"]}));
+      T.push((rand)=>({categoria:"Trabalho", texto:"Prazo apertado e um erro aparece. Você...", opcoes:["Assume e corrige","Pede reforço ao time","Negocia prazo","Entrega o possível","Documenta e previne"]}));
+      T.push((rand)=>({categoria:"Viagem", texto:"Na sua mala, um item indispensável é...", opcoes:["Carregador portátil","Fone de ouvido","Capa de chuva","Livro/Kindle","Tênis confortável"]}));
+      T.push((rand)=>({categoria:"Comida", texto:"No rodízio, você começa por...", opcoes:["saladas","entradas quentes","especialidades da casa","massas","sobremesa"]}));
+      T.push((rand)=>({categoria:"Música", texto:"Para estudar/trabalhar, você ouve...", opcoes:["lo-fi","clássica","silêncio","instrumental","sons da natureza"]}));
+      T.push((rand)=>({categoria:"Cinema e TV", texto:"Num filme surpresa, o que te faz ficar?", opcoes:["Elenco","Fotografia","Trilha sonora","Roteiro","Indicação de amigo"]}));
+      T.push((rand)=>({categoria:"Esporte", texto:"Para assistir com amigos, você escolhe...", opcoes: shuffle(rand, VOC.esportes).slice(0,6)}));
+      T.push((rand)=>({categoria:"Ciência", texto:"Explorar: fundo do mar ou espaço?", opcoes:["Fundo do mar","Espaço"]}));
+      T.push((rand)=>({categoria:"História", texto:"Se pudesse visitar uma época, qual?", opcoes:["Idade Antiga","Idade Média","Renascimento","Século XIX","Futuro distante"]}));
+      T.push((rand)=>({categoria:"Brasil", texto:"Feriado prolongado no Brasil pede...", opcoes:["praia","campo","serra","cidade histórica","parque temático"]}));
+      T.push((rand)=>({categoria:"Sustentabilidade", texto:"Para se locomover no dia a dia, você prefere...", opcoes:["metrô","carro","bicicleta","ônibus","carona"]}));
+      T.push((rand)=>({categoria:"Relacionamentos", texto:"Primeiro encontro ideal:", opcoes:["cafeteria","parque","museu","jantar","show"]}));
+      T.push((rand)=>({categoria:"Educação", texto:"Se fosse aprender um instrumento agora, escolheria...", opcoes: shuffle(rand, VOC.instrumentos).slice(0,6)}));
+      T.push((rand)=>({categoria:"Humor", texto:"Piadas no trabalho devem ser...", opcoes:["raras e leves","frequentes e descontraídas","evitadas"]}));
+      T.push((rand)=>({categoria:"Cotidiano", texto:"Fila enorme no mercado. Você...", opcoes:["Espera pacientemente","Procura outro caixa","Volta mais tarde","Pede delivery","Conversa com quem está perto"]}));
+      T.push((rand)=>({categoria:"Dilemas", texto:"Você ganha 1 hora a mais no dia. Usa para...", opcoes:["exercícios","hobby","descansar","projeto pessoal","estudar"]}));
+      T.push((rand)=>({categoria:"Tecnologia", texto:"Como prefere fazer backup dos seus arquivos?", opcoes:["nuvem","HD externo","pendrive","não faço :(","impressos"]}));
+      T.push((rand)=>({categoria:"Trabalho", texto:"Seu home office ideal tem...", opcoes:["Cadeira ergonômica","Duas telas","Plantas","Iluminação natural","Silêncio absoluto"]}));
+      T.push((rand)=>({categoria:"Viagem", texto:"Em viagem, você prefere se hospedar em...", opcoes:["hotel","hostel","airbnb","pousada","casa de amigos"]}));
+      T.push((rand)=>({categoria:"Comida", texto:"Seu café da manhã perfeito inclui...", opcoes: shuffle(rand, VOC.bebidas.concat(["pão na chapa","frutas","ovos","tapioca"])).slice(0,7)}));
+      T.push((rand)=>({categoria:"Música", texto:"Playlist de treino com mais...", opcoes: shuffle(rand, VOC.generosMusica).slice(0,6)}));
+      T.push((rand)=>({categoria:"Cinema e TV", texto:"No cinema, seu combo ideal é...", opcoes:["Pipoca salgada","Pipoca doce","Pipoca + refri","Nachos","Só água mesmo"]}));
+      T.push((rand)=>({categoria:"Esporte", texto:"Se pudesse começar um esporte do zero hoje...", opcoes: shuffle(rand, VOC.esportes).slice(0,6)}));
+      T.push((rand)=>({categoria:"Ciência", texto:"Qual planeta mais te intriga visitar (imaginando ser seguro)?", opcoes:["Marte","Saturno","Júpiter","Vênus","Netuno"]}));
+      T.push((rand)=>({categoria:"História", texto:"Qual invenção mais mudou sua rotina?", opcoes:["internet","smartphone","máquina de lavar","carro","micro-ondas"]}));
+      T.push((rand)=>({categoria:"Brasil", texto:"Comida típica preferida:", opcoes:["feijoada","moqueca","churrasco","tacacá","acarajé"]}));
+      T.push((rand)=>({categoria:"Sustentabilidade", texto:"Em casa, você trocaria primeiro...", opcoes:["lâmpadas por LED","torneira por arejador","aparelhos antigos","sacos plásticos","produtos químicos"]}));
+      T.push((rand)=>({categoria:"Relacionamentos", texto:"Amigo cancelou em cima da hora. Você...", opcoes:["remarca logo","aproveita para descansar","sai sozinho(a)","chama outra pessoa","fica chateado e fala"]}));
+      T.push((rand)=>({categoria:"Educação", texto:"Curso intensivo de 1 mês, você faria...", opcoes:["idiomas","programação","fotografia","finanças pessoais","culinária"]}));
+      T.push((rand)=>({categoria:"Humor", texto:"Seu GIF/emoji favorito para 'socorro' é...", opcoes:["🤯","😵","😭","🙃","😅"]}));
+      T.push((rand)=>({categoria:"Cotidiano", texto:"Você tem 15 minutos livres. Faz...", opcoes:["meditação","rolar o feed","café e papo","leitura rápida","liga para alguém"]}));
+      T.push((rand)=>({categoria:"Dilemas", texto:"Por uma semana, você trocaria qual hábito?", opcoes:["acordar mais cedo","reduzir açúcar","menos tela","caminhar todo dia","anotar tarefas"]}));
+      T.push((rand)=>({categoria:"Cotidiano", texto:"Com qual clima você rende mais?", opcoes: shuffle(rand, VOC.climas).slice(0,5)}));
+      T.push((rand)=>({categoria:"Comida", texto:"Escolha uma sobremesa para hoje:", opcoes: shuffle(rand, VOC.sobremesas).slice(0,5)}));
+      T.push((rand)=>({categoria:"Música", texto:"No carro, toca mais...", opcoes: shuffle(rand, VOC.generosMusica).slice(0,5)}));
+      T.push((rand)=>({categoria:"Trabalho", texto:"Para focar, você prefere...", opcoes:["silêncio","música","ruído branco","coworking","ao ar livre"]}));
+      T.push((rand)=>({categoria:"Tecnologia", texto:"Numa call online, o que mais incomoda?", opcoes:["microfone aberto","eco/áudio ruim","atrasos","câmera desligada","falta de pauta"]}));
+      T.push((rand)=>({categoria:"Viagem", texto:"Seu estilo de viagem é mais...", opcoes:["roteiro fechado","improviso total","misto","grupo","solo"]}));
+      T.push((rand)=>({categoria:"Esporte", texto:"Assistir ao vivo: estádio/arena ou TV em casa?", opcoes:["Estádio/arena","TV em casa"]}));
+      T.push((rand)=>({categoria:"Ciência", texto:"Qual tema científico você mais curte no dia a dia?", opcoes:["astronomia","saúde","meio ambiente","psicologia","tecnologia"]}));
+      T.push((rand)=>({categoria:"História", texto:"Em museus, você corre para...", opcoes:["arte","história natural","ciência","fotografia","interativos"]}));
+      T.push((rand)=>({categoria:"Brasil", texto:"Para morar, você é mais...", opcoes:["cidade grande","interior","litoral","qualquer lugar com natureza"]}));
+      return T;
+    }
+
+    function generateQuestions(qtd, seed) {
+      const rand = createRNG(seed);
+      const templates = buildTemplates();
+      const perguntas = [];
+      let id = 1;
+      while (perguntas.length < qtd) {
+        for (const make of templates) {
+          if (perguntas.length >= qtd) break;
+          const base = make(rand);
+          const opcoes = sliceOptions(rand, base.opcoes);
+          perguntas.push({ id: id++, categoria: base.categoria, texto: base.texto, opcoes });
+        }
+      }
+      return perguntas.slice(0, qtd);
+    }
+
+    // --- State ---
+    let seed = 20250921;
+    let all = generateQuestions(200, seed);
+    let selectedCats = new Set(CATEGORIAS);
+    let current = null;
+
+    // --- DOM ---
+    const catsEl = document.getElementById('cats');
+    const toggleAllEl = document.getElementById('toggle-all');
+    const catsAvailEl = document.getElementById('cats-available');
+    const chipCat = document.getElementById('chip-cat');
+    const box = document.getElementById('box');
+    const btnSortear = document.getElementById('btn-sortear');
+    const btnNext = document.getElementById('btn-next');
+    const btnRegenerar = document.getElementById('btn-regenerar');
+    const badgeCount = document.getElementById('badge-count');
+
+    // Timer
+    const btnStart = document.getElementById('btn-start');
+    const btnPause = document.getElementById('btn-pause');
+    const btnReset = document.getElementById('btn-reset');
+    const clock = document.getElementById('clock');
+    const bar = document.getElementById('bar');
+    let seconds = 90;
+    let running = false;
+    let interval = null;
+
+    function fmtTime(s){
+      const m = Math.floor(s/60).toString().padStart(2,'0');
+      const ss = (s%60).toString().padStart(2,'0');
+      return m+":"+ss;
+    }
+    function setSeconds(s){
+      seconds = s;
+      clock.textContent = fmtTime(s);
+      bar.style.width = ((s/90)*100).toFixed(2) + "%";
+    }
+    function start(){
+      if (running) return;
+      running = true;
+      interval = setInterval(()=>{
+        if (seconds<=1){ clearInterval(interval); running=false; setSeconds(0); return; }
+        setSeconds(seconds-1);
+      }, 1000);
+    }
+    function pause(){
+      running=false;
+      if (interval) clearInterval(interval);
+    }
+    function resetTimer(autoStart=false){
+      pause();
+      setSeconds(90);
+      if (autoStart) start();
+    }
+    btnStart.onclick = start;
+    btnPause.onclick = pause;
+    btnReset.onclick = ()=>resetTimer(false);
+
+    function renderCats(){
+      catsEl.innerHTML = "";
+      CATEGORIAS.forEach(cat=>{
+        const id = "cat-"+cat.replace(/\s+/g,'-');
+        const wrap = document.createElement('label');
+        wrap.className = "cat";
+        wrap.innerHTML = \`<input type="checkbox" id="\${id}" \${selectedCats.has(cat)?"checked":""}/> <span>\${cat}</span>\`;
+        const cb = wrap.querySelector("input");
+        cb.addEventListener("change",()=>{
+          if (cb.checked) selectedCats.add(cat); else selectedCats.delete(cat);
+          updateAvailable();
+        });
+        catsEl.appendChild(wrap);
+      });
+      toggleAllEl.checked = selectedCats.size === CATEGORIAS.length;
+    }
+    function updateAvailable(){
+      const count = all.filter(q=>selectedCats.has(q.categoria)).length;
+      catsAvailEl.textContent = count + " disponíveis";
+    }
+    toggleAllEl.addEventListener("change", ()=>{
+      if (toggleAllEl.checked) selectedCats = new Set(CATEGORIAS);
+      else selectedCats = new Set();
+      renderCats(); updateAvailable();
+    });
+
+    function pickQuestion(){
+      const pool = all.filter(q=>selectedCats.has(q.categoria));
+      if (pool.length===0){ box.innerHTML = '<div class="muted">Selecione pelo menos 1 categoria.</div>'; return; }
+      const rand = createRNG(Math.floor(Math.random()*1e9));
+      const q = pool[Math.floor(rand()*pool.length)];
+      current = q;
+      renderQuestion();
+      resetTimer(true);
+    }
+    function renderQuestion(){
+      if (!current){ box.innerHTML = '<div class="muted">Clique em “Sortear pergunta”</div>'; chipCat.textContent = "—"; return; }
+      chipCat.textContent = current.categoria;
+      let html = '<div style="display:grid; gap:8px;">';
+      html += '<h2 style="margin:0; font-size:18px; font-weight:700;">'+ current.texto +'</h2>';
+      html += '<div class="grid-opts">';
+      current.opcoes.forEach((op,i)=>{
+        html += '<div class="opt">'+ String.fromCharCode(65+i)+'. '+op +'</div>';
+      });
+      html += '</div></div>';
+      box.innerHTML = html;
+    }
+
+    btnSortear.addEventListener('click', pickQuestion);
+    btnNext.addEventListener('click', pickQuestion);
+    btnRegenerar.addEventListener('click', ()=>{
+      seed = Date.now()%1000000000;
+      all = generateQuestions(200, seed);
+      badgeCount.textContent = "Perguntas: "+all.length;
+      updateAvailable();
+      // não muda pergunta atual
+    });
+
+    // Boot
+    renderCats();
+    updateAvailable();
+    setSeconds(90);
+    renderQuestion();
+
+    // --- PWA registration ---
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch(console.error);
+      });
+    }
+  </script>
+</body>
+</html>
